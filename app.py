@@ -177,9 +177,21 @@ def apply_t_plus(df, t_plus):
     t_plus_days = int(t_plus)
 
     if t_plus_days > 0:
-        # When t_plus_days is set, apply the minimum holding constraint
-        # Logic to ensure sells are delayed by t_plus_days after a buy
-        df['Adjusted Sell'] = df['Adjusted Sell'] & df['Adjusted Buy'].shift(t_plus_days).fillna(False).cumsum().shift(1).fillna(0).eq(df['Adjusted Buy'].sum())
+        # Create a new column to track the buy date
+        df['Buy Date'] = np.nan
+
+        # Track the buy date for each buy signal
+        df.loc[df['Adjusted Buy'], 'Buy Date'] = df.index[df['Adjusted Buy']]
+
+        # Forward-fill the buy date to keep the most recent buy date
+        df['Buy Date'] = df['Buy Date'].ffill()
+
+        # Calculate the earliest sell date allowed based on the T+ days
+        df['Earliest Sell Date'] = df['Buy Date'] + pd.to_timedelta(t_plus_days, unit='D')
+
+        # Only allow sell signals if the current date is after the earliest sell date
+        df['Adjusted Sell'] = df['Adjusted Sell'] & (df.index > df['Earliest Sell Date'])
+
     return df
 
 # Function to run backtesting using vectorbt's from_signals
