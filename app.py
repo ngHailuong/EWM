@@ -1,8 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 from scipy.signal import find_peaks
 import plotly.graph_objects as go
 import seaborn as sns
