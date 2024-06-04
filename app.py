@@ -64,7 +64,17 @@ def load_data(sector):
         df['Datetime'] = pd.to_datetime(df['Datetime'], format='%d/%m/%Y', dayfirst=True)
     df.set_index('Datetime', inplace=True)
     return df
+# Utility function to apply min holding period
+def apply_t_plus(df, t_plus):
+    # Convert T+ from selected options to integer days
+    t_plus_days = int(t_plus)
 
+    if t_plus_days > 0:
+        # When t_plus_days is set, apply the minimum holding constraint
+        # Logic to ensure sells are delayed by t_plus_days after a buy
+        df['Adjusted Sell'] = df['Adjusted Sell'] & df['Adjusted Buy'].shift(t_plus_days).fillna(False).cumsum().shift(1).fillna(0).eq(df['Adjusted Buy'].sum())
+    return df
+    
 @st.cache_data
 def load_stock_symbols(file_path):
     if not os.path.exists(file_path):
@@ -238,17 +248,6 @@ with st.sidebar.expander("Thông số kiểm tra", expanded=True):
     direction_vi = st.selectbox("Vị thế", ["Mua", "Bán"], index=0)
     direction = "longonly" if direction_vi == "Mua" else "shortonly"
     t_plus = st.selectbox("Thời gian nắm giữ tối thiểu", [0, 1, 2.5, 3], index=0)
-
-# Utility function to apply min holding period
-def apply_t_plus(df, t_plus):
-    # Convert T+ from selected options to integer days
-    t_plus_days = int(t_plus)
-
-    if t_plus_days > 0:
-        # When t_plus_days is set, apply the minimum holding constraint
-        # Logic to ensure sells are delayed by t_plus_days after a buy
-        df['Adjusted Sell'] = df['Adjusted Sell'] & df['Adjusted Buy'].shift(t_plus_days).fillna(False).cumsum().shift(1).fillna(0).eq(df['Adjusted Buy'].sum())
-    return df
 
 # Function to run backtest using vectorbt's from_signals
 def run_backtest(df, init_cash, fees, direction, t_plus):
