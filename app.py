@@ -181,14 +181,14 @@ def calculate_indicators_and_crashes(df, strategies):
     return df
 
 # Function to run backtesting using vectorbt's from_signals
-def run_backtest(df, init_cash, fees, direction):
+def run_backtest(df, init_cash, fees, direction, t_plus):
+    df = apply_t_plus(df, t_plus)
     entries = df['Adjusted Buy']
     exits = df['Adjusted Sell']
 
-    # Check if there are any entries and exits
     if entries.empty or exits.empty or not entries.any() or not exits.any():
         return None
-
+        
     portfolio = vbt.Portfolio.from_signals(
         df['close'],
         entries,
