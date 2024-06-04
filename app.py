@@ -10,10 +10,6 @@ import vectorbt as vbt
 import pandas_ta as ta
 import os
 
-# Accept the terms and conditions for vnstock3
-if "ACCEPT_TC" not in os.environ:
-    os.environ["ACCEPT_TC"] = "tôi đồng ý"
-
 # Check if the image file exists
 image_path = 'image.png'
 if not os.path.exists(image_path):
@@ -242,6 +238,40 @@ with st.sidebar.expander("Thông số kiểm tra", expanded=True):
     direction_vi = st.selectbox("Vị thế", ["Mua", "Bán"], index=0)
     direction = "longonly" if direction_vi == "Mua" else "shortonly"
     t_plus = st.selectbox("Thời gian nắm giữ tối thiểu", [0, 1, 2.5, 3], index=0)
+
+# Utility function to apply min holding period
+def apply_t_plus(df, t_plus):
+    # Convert T+ from selected options to integer days
+    t_plus_days = int(t_plus)
+
+    if t_plus_days > 0:
+        # When t_plus_days is set, apply the minimum holding constraint
+        # Logic to ensure sells are delayed by t_plus_days after a buy
+        df['Adjusted Sell'] = df['Adjusted Sell'] & df['Adjusted Buy'].shift(t_plus_days).fillna(False).cumsum().shift(1).fillna(0).eq(df['Adjusted Buy'].sum())
+    return df
+
+# Function to run backtest using vectorbt's from_signals
+def run_backtest(df, init_cash, fees, direction, t_plus):
+    entries = df['Adjusted Buy']
+    exits = df['Adjusted Sell']
+
+    # Check if there are any entries and exits
+    if entries.empty or exits.empty or not entries.any() or not exits.any():
+        return None
+
+    # Apply T+ logic
+    df = apply_t_plus(df, t_plus)
+    exits = df['Adjusted Sell']
+
+    portfolio = vbt.Portfolio.from_signals(
+        df['close'],
+        entries,
+        exits,
+        init_cash=init_cash,
+        fees=fees,
+        direction=direction
+    )
+    return portfolio
 
     # New trading parameters
     take_profit_percentage = st.number_input('Take Profit (%)', min_value=0.0, max_value=100.0, value=10.0, step=0.1)
