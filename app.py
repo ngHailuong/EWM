@@ -10,7 +10,40 @@ import vectorbt as vbt
 import pandas_ta as ta
 import os
 
-#https://github.com/bilal114/react-date-range-calendar.git
+import React, { useState } from "react";
+import { DateRange } from "react-date-range";
+import { addDays } from "date-fns";
+import "react-date-range/dist/styles.css"; // main style file
+import "react-date-range/dist/theme/default.css"; // theme css file
+
+const DateRangePicker = ({ onDateChange }) => {
+  const [state, setState] = useState([
+    {
+      startDate: new Date(),
+      endDate: addDays(new Date(), 7),
+      key: "selection",
+    },
+  ]);
+
+  const handleSelect = (ranges) => {
+    setState([ranges.selection]);
+    onDateChange(ranges.selection);
+  };
+
+  return <DateRange editableDateInputs={true} onChange={handleSelect} moveRangeOnFirstSelection={false} ranges={state} />;
+};
+
+export default DateRangePicker;
+import streamlit.components.v1 as components
+
+_component_func = components.declare_component(
+    "date_range_picker",
+    url="http://localhost:3001",  # or wherever your React app is running
+)
+
+def date_range_picker():
+    component_value = _component_func()
+    return component_value
 
 # Check if the image file exists
 image_path = 'image.png'
