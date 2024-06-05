@@ -1,7 +1,3 @@
-git clone https://github.com/bilal114/react-date-range-calendar.git
-cd react-date-range-calendar
-npm install
-npm start
 import streamlit as st
 import pandas as pd
 import numpy as np
