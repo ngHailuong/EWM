@@ -8,3 +8,7 @@ vectorbt
 pandas-ta
 seaborn
 matplotlib
+git clone https://github.com/bilal114/react-date-range-calendar.git
+cd react-date-range-calendar
+npm install
+npm start
