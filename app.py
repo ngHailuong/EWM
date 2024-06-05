@@ -15,7 +15,7 @@ import streamlit.components.v1 as components
 # Declare the React component
 _component_func = components.declare_component(
     "date_range_picker",
-    url="http://localhost:3001"  # Ensure this matches where your React app is running
+    url="http://localhost:3000"  # Ensure this matches where your React app is running
 )
 
 def date_range_picker():
@@ -287,8 +287,8 @@ with st.sidebar.expander("Thông số kiểm tra", expanded=True):
 # Use the date range picker
 date_range = date_range_picker()
 if date_range:
-    start_date = date_range["startDate"]
-    end_date = date_range["endDate"]
+    start_date = datetime.strptime(date_range["startDate"], '%Y-%m-%d')
+    end_date = datetime.strptime(date_range["endDate"], '%Y-%m-%d')
 else:
     start_date = None
     end_date = None
