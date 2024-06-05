@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from datetime import datetime
+from datetime import datetime, timedelta
 from scipy.signal import find_peaks
 import plotly.graph_objects as go
 import seaborn as sns
@@ -10,17 +10,7 @@ import vectorbt as vbt
 import pandas_ta as ta
 import os
 
-import streamlit.components.v1 as components
-
-# Declare the React component
-_component_func = components.declare_component(
-    "date_range_picker",
-    url="http://localhost:3000"  # Ensure this matches where your React app is running
-)
-
-def date_range_picker():
-    component_value = _component_func()
-    return component_value
+#https://github.com/bilal114/react-date-range-calendar.git
 
 # Check if the image file exists
 image_path = 'image.png'
@@ -284,15 +274,6 @@ with st.sidebar.expander("Thông số kiểm tra", expanded=True):
     # Sidebar: Choose the strategies to apply
     strategies = st.multiselect("Các chỉ báo", ["MACD", "Supertrend", "Stochastic", "RSI"], default=["MACD", "Supertrend", "Stochastic", "RSI"])
 
-# Use the date range picker
-date_range = date_range_picker()
-if date_range:
-    start_date = datetime.strptime(date_range["startDate"], '%Y-%m-%d')
-    end_date = datetime.strptime(date_range["endDate"], '%Y-%m-%d')
-else:
-    start_date = None
-    end_date = None
-
 # Ensure that the date range is within the available data
 if selected_stocks:
     if portfolio_options:
@@ -307,10 +288,8 @@ if selected_stocks:
         last_available_date = df_full.index.max().date()
 
         # Ensure selected date range is within the available data range
-        if start_date is None:
-            start_date = first_available_date
-        if end_date is None:
-            end_date = last_available_date
+        start_date = st.date_input('Ngày bắt đầu', first_available_date)
+        end_date = st.date_input('Ngày kết thúc', last_available_date)
 
         if start_date < first_available_date:
             start_date = first_available_date
