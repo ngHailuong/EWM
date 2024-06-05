@@ -58,12 +58,8 @@ def load_data(sector):
     if not os.path.exists(file_path):
         st.error(f"File not found: {file_path}")
         return pd.DataFrame()
-    if sector == 'VNINDEX':
-        df = pd.read_csv(file_path)
-        df['Datetime'] = pd.to_datetime(df['Datetime'], format='%m/%d/%Y')  # Format for Vnindex
-    else:
-        df = pd.read_csv(file_path)
-        df['Datetime'] = pd.to_datetime(df['Datetime'], format='%d/%m/%Y', dayfirst=True)
+    df = pd.read_csv(file_path)
+    df = unify_date_format(df, 'Datetime')
     df.set_index('Datetime', inplace=True)
     return df
 
@@ -75,6 +71,14 @@ def load_stock_symbols(file_path):
     df = pd.read_csv(file_path)
     stock_symbols_df = df.drop_duplicates(subset='symbol')
     return stock_symbols_df['symbol'].tolist()
+
+def unify_date_format(df, date_column_name):
+    """
+    Converts all dates in the specified column of the dataframe to a unified format.
+    """
+    df[date_column_name] = pd.to_datetime(df[date_column_name], errors='coerce', dayfirst=True)
+    df.dropna(subset=[date_column_name], inplace=True)
+    return df
 
 # Ichimoku Oscillator Class
 class IchimokuOscillator:
