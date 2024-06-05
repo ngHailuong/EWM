@@ -10,8 +10,6 @@ import vectorbt as vbt
 import pandas_ta as ta
 import os
 
-#https://github.com/bilal114/react-date-range-calendar.git
-
 # Check if the image file exists
 image_path = 'image.png'
 if not os.path.exists(image_path):
@@ -79,28 +77,6 @@ def unify_date_format(df, date_column_name):
     df[date_column_name] = pd.to_datetime(df[date_column_name], errors='coerce', dayfirst=True)
     df.dropna(subset=[date_column_name], inplace=True)
     return df
-
-# Ichimoku Oscillator Class
-class IchimokuOscillator:
-    def __init__(self, conversion_periods=8, base_periods=13, lagging_span2_periods=26, displacement=13):
-        self.conversion_periods = conversion_periods
-        self.base_periods = base_periods
-        self.lagging_span2_periods = lagging_span2_periods
-        self.displacement = displacement
-
-    def donchian_channel(self, series, length):
-        lowest = series.rolling(window=length, min_periods=1).min()
-        highest = series.rolling(window=length, min_periods=1).max()
-        return (lowest + highest) / 2
-
-    def calculate(self, df):
-        df['conversion_line'] = self.donchian_channel(df['close'], self.conversion_periods)
-        df['base_line'] = self.donchian_channel(df['close'], self.base_periods)
-        df['leading_span_a'] = (df['conversion_line'] + df['base_line']) / 2
-        df['leading_span_b'] = self.donchian_channel(df['close'], self.lagging_span2_periods)
-        df['cloud_min'] = np.minimum(df['leading_span_a'].shift(self.displacement - 1), df['leading_span_b'].shift(self.displacement - 1))
-        df['cloud_max'] = np.maximum(df['leading_span_a'].shift(self.displacement - 1), df['leading_span_b'].shift(self.displacement - 1))
-        return df
 
 # Function to calculate MACD signals
 def calculate_macd(prices, fast_length=12, slow_length=26, signal_length=9):
