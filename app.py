@@ -1,7 +1,11 @@
+git clone https://github.com/bilal114/react-date-range-calendar.git
+cd react-date-range-calendar
+npm install
+npm start
 import streamlit as st
 import pandas as pd
 import numpy as np
-from datetime import datetime, timedelta
+from datetime import datetime
 from scipy.signal import find_peaks
 import plotly.graph_objects as go
 import seaborn as sns
@@ -10,35 +14,12 @@ import vectorbt as vbt
 import pandas_ta as ta
 import os
 
-import React, { useState } from "react";
-import { DateRange } from "react-date-range";
-import { addDays } from "date-fns";
-import "react-date-range/dist/styles.css"; // main style file
-import "react-date-range/dist/theme/default.css"; // theme css file
-
-const DateRangePicker = ({ onDateChange }) => {
-  const [state, setState] = useState([
-    {
-      startDate: new Date(),
-      endDate: addDays(new Date(), 7),
-      key: "selection",
-    },
-  ]);
-
-  const handleSelect = (ranges) => {
-    setState([ranges.selection]);
-    onDateChange(ranges.selection);
-  };
-
-  return <DateRange editableDateInputs={true} onChange={handleSelect} moveRangeOnFirstSelection={false} ranges={state} />;
-};
-
-export default DateRangePicker;
 import streamlit.components.v1 as components
 
+# Declare the React component
 _component_func = components.declare_component(
     "date_range_picker",
-    url="http://localhost:3001",  # or wherever your React app is running
+    url="http://localhost:3001"  # Ensure this matches where your React app is running
 )
 
 def date_range_picker():
@@ -307,6 +288,15 @@ with st.sidebar.expander("Thông số kiểm tra", expanded=True):
     # Sidebar: Choose the strategies to apply
     strategies = st.multiselect("Các chỉ báo", ["MACD", "Supertrend", "Stochastic", "RSI"], default=["MACD", "Supertrend", "Stochastic", "RSI"])
 
+# Use the date range picker
+date_range = date_range_picker()
+if date_range:
+    start_date = date_range["startDate"]
+    end_date = date_range["endDate"]
+else:
+    start_date = None
+    end_date = None
+
 # Ensure that the date range is within the available data
 if selected_stocks:
     if portfolio_options:
@@ -321,8 +311,10 @@ if selected_stocks:
         last_available_date = df_full.index.max().date()
 
         # Ensure selected date range is within the available data range
-        start_date = st.date_input('Ngày bắt đầu', first_available_date)
-        end_date = st.date_input('Ngày kết thúc', last_available_date)
+        if start_date is None:
+            start_date = first_available_date
+        if end_date is None:
+            end_date = last_available_date
 
         if start_date < first_available_date:
             start_date = first_available_date
